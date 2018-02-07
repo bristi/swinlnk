@@ -6,7 +6,7 @@ from pathlib import PureWindowsPath
 
 log = logging.getLogger(__name__)
 
-DEBUG = True
+DEBUG = False
 
 if DEBUG:
 
