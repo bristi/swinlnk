@@ -1,7 +1,32 @@
 import re
 import binascii
+import logging
 
 from pathlib import PureWindowsPath
+
+log = logging.getLogger(__name__)
+
+DEBUG = True
+
+if DEBUG:
+
+    #
+    # Set up logging
+    #
+
+    handler = logging.StreamHandler()
+
+    formatter = logging.Formatter(
+        '## %(levelname)s [%(asctime)s](%(name)s) %(message)s',
+        datefmt='%Y%m%d %H:%M:%S'
+    )
+    log.setLevel(logging.DEBUG)
+
+    handler.setFormatter(formatter)
+    log.addHandler(handler)
+
+    log.info("Running in DEBUG mode")
+
 
 class SWinLnk:
     r"""
@@ -134,6 +159,7 @@ class SWinLnk:
 
         if str(p).startswith('\\\\'):
             # This is a network link
+            log.debug("Identified as network link")
             network_lnk = True
             prefix_root = self.PREFIX_NETWORK_ROOT
             item_data = '1f58' + self.convert_clsid_to_data(self.CLSID_Network)
@@ -150,16 +176,24 @@ class SWinLnk:
                 target_root = str(p)
         else:
             # This is local I guess
+            log.debug("Identified as non-network link")
             prefix_root = self.PREFIX_LOCAL_ROOT
             item_data = '1f50' + self.convert_clsid_to_data(self.CLSID_Computer)
 
             target_root = p.drive
 
+            if len(p.parts) > 1:
+                # Leaf is part without drive (and backslash)
+                # Eg for 'C:\\Foo\\Bar' we get 'Foo\\Bar'
+                target_leaf = str(p)[len(p.drive)+1:]
+
             if not target_root.endswith('\\'):
                 # TODO: Not sure this is a good idea..?
+                log.debug("target_root ends with '\\'")
                 target_root += '\\'
 
         if len(target_leaf) == 0:
+            log.debug("No target leaf so assuming root link")
             root_lnk = True
 
         # We select the prefix that will be used to display the shortcut icon
@@ -174,6 +208,8 @@ class SWinLnk:
             file_attributes = self.FileAttributes_Directory
 
         # Convert target values to binary
+        log.debug('target_root: {}'.format(target_root))
+        log.debug('target_leaf: {}'.format(target_leaf))
 
         target_root = self.ascii2hex(target_root)
         # Needed from Vista and higher otherwise the link is considered
