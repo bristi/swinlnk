@@ -1,6 +1,7 @@
 import re
 import binascii
 import logging
+import os
 
 from pathlib import PureWindowsPath
 
@@ -236,9 +237,7 @@ class SWinLnk:
 
         idlist = self.gen_idlist(idlist_items)
 
-        with open(link_name, 'wb') as fout:
-            fout.write(
-                binascii.unhexlify(''.join([
+        binData = binascii.unhexlify(''.join([
                     self.HeaderSize,
                     self.LinkCLSID,
                     self.LinkFlags,
@@ -256,4 +255,16 @@ class SWinLnk:
                     idlist,
                     self.TerminalID,
                 ]))
-            )
+        if os.path.isfile(link_name):
+            with open(link_name, 'rb') as f:
+                oldLink = f.read()
+            writeIt = not (binData == oldLink)
+            oldLink = None
+        else:
+            writeIt = True
+
+        if writeIt:
+            with open(link_name, 'wb') as fout:
+                fout.write(binData)
+        binData = None
+        writeIt = None
