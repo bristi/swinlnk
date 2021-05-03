@@ -19,10 +19,9 @@ To install: ``pip install swinlnk``
 Example
 =======
 
-```python
-from swinlnk.swinlnk import SWinLnk
+  python
+  from swinlnk.swinlnk import SWinLnk
 
-swl = SWinLnk()
-
-swl.create_lnk('W:\\Foo\\Bar', '/mnt/win_share/playground/Bar_winlink.lnk')
-```
+  swl = SWinLnk()
+  
+  swl.create_lnk("W:\\Foo\\Bar", "/mnt/win_share/playground/Bar_winlink.lnk")
